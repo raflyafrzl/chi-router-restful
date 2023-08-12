@@ -1,13 +1,22 @@
 package middlewares
 
-import "net/http"
+import (
+	"encoding/json"
+	"gochiapp/model"
+	"net/http"
+)
 
-func recoveryMiddleware(han http.Handler) http.Handler {
+func RecoveryMiddleware(han http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
-			err := recover()
-			if err != nil {
-				w.Write([]byte("Test"))
+			w.Header().Set("Content-Type", "application/json")
+			data := recover()
+
+			if data != nil {
+				var err model.ResponseFailWeb = data.(model.ResponseFailWeb)
+				w.WriteHeader(err.StatusCode)
+				response, _ := json.Marshal(err)
+				w.Write(response)
 			}
 
 		}()

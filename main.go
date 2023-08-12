@@ -3,29 +3,31 @@ package main
 import (
 	"encoding/json"
 	"gochiapp/airport"
+	"gochiapp/config"
+	"gochiapp/interfaces"
 	"gochiapp/middlewares"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
 
-type Response struct {
-	Message string `json:"message"`
-	Status  int16  `json:"status"`
-}
-
 func main() {
 	r := chi.NewRouter()
+
+	//setup configuration
+	var config *config.Config = config.New()
+
 	r.Use(middlewares.RecoveryMiddleware)
 
-	airport := airport.NewAirport()
+	var airport interfaces.AirportController = airport.NewAirport()
 	//sub-router for airport
+
 	r.Route("/api/v1/airport", airport.Route)
 	//if Router not found
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
 
-		response := map[string]interface{}{
+		var response map[string]interface{} = map[string]interface{}{
 			"error":  "Route not found",
 			"status": "failed",
 		}
@@ -35,7 +37,7 @@ func main() {
 		w.Write(data)
 
 	})
-
-	http.ListenAndServe(":3000", r)
+	var port string = ":" + config.Get("PORT")
+	http.ListenAndServe(port, r)
 
 }

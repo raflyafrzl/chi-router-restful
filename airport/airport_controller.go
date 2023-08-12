@@ -41,18 +41,26 @@ func (a *airport) Get(w http.ResponseWriter, r *http.Request) {
 
 func (a *airport) Insert(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	//close body
+	//close body because r.Body return r.ReadCloser
 	defer r.Body.Close()
 	var request model.AirportCreateRequest
 
 	body, err := io.ReadAll(r.Body)
 
 	if err != nil {
-		panic("Invalid reading body")
+		panic(model.ResponseFailWeb{
+			Status:     "Failed",
+			Error:      err.Error(),
+			StatusCode: 400,
+		})
 	}
 
 	if err := json.Unmarshal(body, &request); err != nil {
-		panic("Invalid parsing body request")
+		panic((model.ResponseFailWeb{
+			Status:     "Failed",
+			Error:      err.Error(),
+			StatusCode: 400,
+		}))
 	}
 
 	//FIXME: Change the right request(after get data from DB)
