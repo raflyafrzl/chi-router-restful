@@ -16,13 +16,15 @@ func main() {
 
 	//setup configuration
 	var config *config.Config = config.New()
-
+	//settings middleware
 	r.Use(middlewares.RecoveryMiddleware)
 
-	var airport interfaces.AirportController = airport.NewAirport()
+	//setup repo->service->controller
+	var airportService interfaces.AirportService = airport.NewAirportService()
+	var airport interfaces.AirportController = airport.NewAirport(&airportService)
 	//sub-router for airport
-
 	r.Route("/api/v1/airport", airport.Route)
+
 	//if Router not found
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)

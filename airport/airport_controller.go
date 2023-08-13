@@ -10,22 +10,24 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type airport struct{}
-
-func NewAirport() interfaces.AirportController {
-	return &airport{}
+type airportcontroller struct {
+	service interfaces.AirportService
 }
 
-func (a *airport) Route(r chi.Router) {
+func NewAirport(s *interfaces.AirportService) interfaces.AirportController {
+	return &airportcontroller{service: *s}
+}
+
+func (a *airportcontroller) Route(r chi.Router) {
 	//TODO: Create All Route for Airport
-	r.Get("/", a.Get)
+	r.Get("/", a.List)
 	r.Post("/", a.Insert)
 }
 
-func (a *airport) Get(w http.ResponseWriter, r *http.Request) {
+func (a *airportcontroller) List(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	data := model.ResponseWeb{
+	var data model.ResponseWeb = model.ResponseWeb{
 		Message:    "Data Retrieved Successfully",
 		StatusCode: 200,
 		Data: map[string]interface{}{
@@ -39,11 +41,12 @@ func (a *airport) Get(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (a *airport) Insert(w http.ResponseWriter, r *http.Request) {
+func (a *airportcontroller) Insert(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	//close body because r.Body return r.ReadCloser
+	//close body
 	defer r.Body.Close()
-	var request model.AirportCreateRequest
+
+	var request model.CreateAirportModel
 
 	body, err := io.ReadAll(r.Body)
 
@@ -62,9 +65,18 @@ func (a *airport) Insert(w http.ResponseWriter, r *http.Request) {
 			StatusCode: 400,
 		}))
 	}
+	data, err := a.service.ListAll()
+	if err != nil {
+		panic(model.ResponseFailWeb{
+			Status:     "Failed",
+			Error:      err.Error(),
+			StatusCode: 400,
+		})
+	}
 
-	//FIXME: Change the right request(after get data from DB)
+	response, _ := json.Marshal(data)
 
-	w.Write([]byte("hello"))
+	w.WriteHeader(201)
+	w.Write(response)
 
 }
