@@ -1,6 +1,6 @@
 package entities
 
-type AirportEntity struct {
+type Airport struct {
 	Id              string `gorm:"type:uuid;column:id" json:"id"`
 	AirportName     string `gorm:"type:varchar(40);column:airport_name" json:"airport_name"`
 	AirportCode     string `gorm:"type:varchar(3);column:airport_code" json:"airport_code"`

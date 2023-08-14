@@ -8,7 +8,11 @@ import (
 
 type Config struct{}
 
-func New(filenames ...string) *Config {
+type ConfigInf interface {
+	Get(key string) string
+}
+
+func New(filenames ...string) ConfigInf {
 
 	if err := godotenv.Load(filenames...); err != nil {
 		panic(err.Error())

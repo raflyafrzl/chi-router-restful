@@ -9,18 +9,21 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"gorm.io/gorm"
 )
 
 func main() {
 	r := chi.NewRouter()
 
 	//setup configuration
-	var config *config.Config = config.New()
+	var configuration config.ConfigInf = config.New()
 	//settings middleware
 	r.Use(middlewares.RecoveryMiddleware)
 
 	//setup repo->service->controller
-	var airportService interfaces.AirportService = airport.NewAirportService()
+	var db *gorm.DB = config.InitDB(configuration)
+	var airportrepository interfaces.AirportRepository = airport.NewAirportRepository(db)
+	var airportService interfaces.AirportService = airport.NewAirportService(&airportrepository)
 	var airport interfaces.AirportController = airport.NewAirport(&airportService)
 	//sub-router for airport
 	r.Route("/api/v1/airport", airport.Route)
@@ -39,7 +42,7 @@ func main() {
 		w.Write(data)
 
 	})
-	var port string = ":" + config.Get("PORT")
+	var port string = ":" + configuration.Get("PORT")
 	http.ListenAndServe(port, r)
 
 }
