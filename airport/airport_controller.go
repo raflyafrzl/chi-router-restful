@@ -49,7 +49,7 @@ func (a *airportcontroller) Insert(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &request)
 	utils.ErrorResponseWeb(err, 400)
 
-	data, err := a.service.FindAll()
+	data, err := a.service.Create(request)
 	utils.ErrorResponseWeb(err, 404)
 
 	response, _ := json.Marshal(data)

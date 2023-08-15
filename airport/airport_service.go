@@ -25,14 +25,18 @@ func (a *airportservice) FindAll() (entities.Airport, error) {
 }
 
 func (a *airportservice) Create(data model.CreateAirportModel) (model.CreateAirportModel, error) {
-
+	utils.Validate[model.CreateAirportModel](data)
 	var airport entities.Airport
 
+	var airportCode string = string(data.AirportName[0]) + string(data.AirportName[len(data.AirportName)-1]) + "L"
 	airport = entities.Airport{
-		Id:          utils.GetRandomID(),
-		AirportName: data.AirportName,
-		Location:    data.Location,
+		Id:              utils.GetRandomID(),
+		AirportName:     data.AirportName,
+		Location:        data.Location,
+		AirportCode:     airportCode,
+		LocationAcronym: data.LocationAcronym,
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
 	_, err := a.repository.Store(ctx, airport)

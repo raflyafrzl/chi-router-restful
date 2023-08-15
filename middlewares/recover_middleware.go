@@ -13,10 +13,15 @@ func RecoveryMiddleware(han http.Handler) http.Handler {
 			data := recover()
 
 			if data != nil {
-				var err model.ResponseFailWeb = data.(model.ResponseFailWeb)
-				w.WriteHeader(err.StatusCode)
-				response, _ := json.Marshal(err)
-				w.Write(response)
+				err, ok := data.(model.ResponseFailWeb)
+
+				if ok {
+					w.WriteHeader(err.StatusCode)
+					response, _ := json.Marshal(err)
+					w.Write(response)
+					return
+				}
+
 			}
 
 		}()

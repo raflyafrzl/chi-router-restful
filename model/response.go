@@ -8,7 +8,7 @@ type ResponseWeb struct {
 }
 
 type ResponseFailWeb struct {
-	Error      string `json:"error"`
+	Error      any    `json:"error"`
 	StatusCode int    `json:"status_code"`
 	Status     string `json:"status"`
 }
