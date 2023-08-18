@@ -21,8 +21,11 @@ func NewAirport(s *interfaces.AirportService) interfaces.AirportController {
 
 func (a *airportcontroller) Route(r chi.Router) {
 	//TODO: Create All Route for Airport
+
 	r.Get("/", a.List)
 	r.Post("/", a.Insert)
+	r.Delete("/{id}", a.Delete)
+	r.Get("/{id}", a.FindById)
 }
 
 func (a *airportcontroller) List(w http.ResponseWriter, r *http.Request) {
@@ -57,4 +60,41 @@ func (a *airportcontroller) Insert(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(201)
 	w.Write(response)
 
+}
+
+func (a *airportcontroller) Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var id string = chi.URLParam(r, "id")
+	a.service.Delete(id)
+
+	var rawresponse model.ResponseWeb = model.ResponseWeb{
+		Status:     "Success",
+		Message:    "Data has been successfully deleted",
+		StatusCode: 200,
+		Data:       "id= " + id,
+	}
+
+	response, _ := json.Marshal(rawresponse)
+
+	w.Write(response)
+
+}
+
+func (a *airportcontroller) FindById(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var id string = chi.URLParam(r, "id")
+	var data model.CreateAirportModel = a.service.FindById(id)
+
+	var rawresponse model.ResponseWeb = model.ResponseWeb{
+		Status:     "Success",
+		StatusCode: 200,
+		Message:    "Success retrieved a data",
+		Data: map[string]interface{}{
+			"id":     id,
+			"result": data,
+		},
+	}
+	response, _ := json.Marshal(rawresponse)
+	w.Write(response)
 }

@@ -21,6 +21,14 @@ func RecoveryMiddleware(han http.Handler) http.Handler {
 					w.Write(response)
 					return
 				}
+				w.WriteHeader(500)
+				var errResponse map[string]interface{} = map[string]interface{}{
+					"Status":     "Error",
+					"StatusCode": "500",
+					"Error":      data,
+				}
+				finalresponse, _ := json.Marshal(errResponse)
+				w.Write(finalresponse)
 
 			}
 

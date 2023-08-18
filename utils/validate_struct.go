@@ -42,6 +42,9 @@ func customMessage(e validator.FieldError) string {
 		return "length of this field should be more than " + e.Param() + " characters"
 	case "max":
 		return "length of this field should be less than " + e.Param() + " characters"
+	case "alpha":
+		return "Must be alphabet only"
 	}
+
 	return ""
 }

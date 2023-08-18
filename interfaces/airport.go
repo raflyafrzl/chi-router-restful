@@ -13,13 +13,19 @@ type AirportController interface {
 	List(w http.ResponseWriter, r *http.Request)
 	Route(r chi.Router)
 	Insert(w http.ResponseWriter, r *http.Request)
+	FindById(w http.ResponseWriter, r *http.Request)
 }
 type AirportService interface {
-	FindAll() (entities.Airport, error)
+	FindAll() ([]entities.Airport, error)
 	Create(data model.CreateAirportModel) (model.CreateAirportModel, error)
+	FindById(id string) model.CreateAirportModel
+	Delete(id string)
 }
 
 type AirportRepository interface {
-	List(ctx context.Context) (entities.Airport, error)
+	List(ctx context.Context) ([]entities.Airport, error)
 	Store(ctx context.Context, data entities.Airport) (entities.Airport, error)
+	Update(ctx context.Context, data entities.Airport) entities.Airport
+	First(ctx context.Context, id string) (entities.Airport, error)
+	Delete(ctx context.Context, id string) error
 }
