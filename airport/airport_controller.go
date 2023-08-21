@@ -26,13 +26,22 @@ func (a *airportcontroller) Route(r chi.Router) {
 	r.Post("/", a.Insert)
 	r.Delete("/{id}", a.Delete)
 	r.Get("/{id}", a.FindById)
+	r.Patch("/{id}", a.Update)
 }
 
 func (a *airportcontroller) List(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	data, err := a.service.FindAll()
 	utils.ErrorResponseWeb(err, 404)
-	response, _ := json.Marshal(data)
+
+	var rewresponse model.ResponseWeb = model.ResponseWeb{
+		Status:     "Success",
+		Data:       data,
+		StatusCode: 200,
+		Message:    "Success retrieved data",
+	}
+
+	response, _ := json.Marshal(rewresponse)
 
 	w.Write(response)
 
@@ -97,4 +106,22 @@ func (a *airportcontroller) FindById(w http.ResponseWriter, r *http.Request) {
 	}
 	response, _ := json.Marshal(rawresponse)
 	w.Write(response)
+}
+
+func (a *airportcontroller) Update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	defer r.Body.Close()
+	var request model.UpdateAirportModel
+	var id string = chi.URLParam(r, "id")
+	body, err := io.ReadAll(r.Body)
+	utils.ErrorResponseWeb(err, 400)
+
+	////unmarshal body to request
+	err = json.Unmarshal(body, &request)
+	utils.ErrorResponseWeb(err, 500)
+
+	a.service.Update(id, request)
+
+	w.Write(body)
+
 }

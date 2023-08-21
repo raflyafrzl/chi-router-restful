@@ -72,7 +72,12 @@ func (a *airportrepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		panic(err)
 	}
-
 	return nil
+}
 
+func (a *airportrepository) DeleteAll(ctx context.Context) {
+	err := a.DB.WithContext(ctx).Exec("DELETE FROM airports").Error
+	if err != nil {
+		panic(err)
+	}
 }

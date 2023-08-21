@@ -7,7 +7,7 @@ type CreateAirportModel struct {
 }
 
 type UpdateAirportModel struct {
-	Location        string `json:"location" validate:"min=4"`
-	AirportName     string `json:"airport_name" validate:"min=3"`
-	LocationAcronym string `json:"location_acronym" validate:"alpha,max=3"`
+	Location        string `json:"location" validate:"omitempty,min=4"`
+	AirportName     string `json:"airport_name" validate:"omitempty,min=3"`
+	LocationAcronym string `json:"location_acronym" validate:"omitempty,alpha,max=3"`
 }

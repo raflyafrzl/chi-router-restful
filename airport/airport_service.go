@@ -83,16 +83,22 @@ func (a airportservice) Delete(id string) {
 }
 
 func (a *airportservice) Update(id string, data model.UpdateAirportModel) {
+	//Validate data
+	utils.Validate[model.UpdateAirportModel](data)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
-	var err error
 
-	_, err = a.repository.First(ctx, id)
+	result, err := a.repository.First(ctx, id)
 	utils.ErrorResponseWeb(err, 404)
 
-	//TODO: must fix
-	var airportCode string = string(data.AirportName[0]) + string(data.AirportName[len(data.AirportName)-1]) + "L"
+	var airportCode string
+	if data.AirportName == "" {
+		airportCode = string(result.AirportName[0]) + string(result.AirportName[len(result.AirportName)-1]) + "L"
+
+	} else {
+		airportCode = string(data.AirportName[0]) + string(data.AirportName[len(data.AirportName)-1]) + "L"
+	}
 
 	var airport entities.Airport = entities.Airport{
 		AirportName:     data.AirportName,
