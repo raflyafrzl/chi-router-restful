@@ -17,14 +17,8 @@ type Server struct {
 func StarterServer() *Server {
 	s := &Server{}
 	s.Router = chi.NewRouter()
-
-	return s
-}
-
-func (s *Server) AllHandlers() {
 	s.Router.Use(middlewares.RecoveryMiddleware)
-	s.Router.Route("/api/v1/airport", controller.Route)
-
+	return s
 }
 
 func createTestContext() (context.Context, context.CancelFunc) {
@@ -33,9 +27,9 @@ func createTestContext() (context.Context, context.CancelFunc) {
 }
 
 // var app *chi.Mux = StarterServer()
-var repository = airport.NewAirportRepository(dbconfig)
-var service = airport.NewAirportService(&repository)
-var controller = airport.NewAirport(&service)
+var airportRepo = airport.NewAirportRepository(dbconfig)
+var airportService = airport.NewAirportService(&airportRepo)
+var airportController = airport.NewAirport(&airportService)
 
 var configuration = config.New("../.env.test")
 var dbconfig = config.InitDB(configuration)
