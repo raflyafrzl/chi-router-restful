@@ -22,5 +22,7 @@ CREATE TABLE users(
     email varchar(45) NOT NULL,
     phone_number varchar(14) NOT NULL,
     password varchar(40) NOT NULL,
+    is_verified boolean DEFAULT FALSE,
+    role varchar(15) DEFAULT 'user',
     UNIQUE(email)
 );

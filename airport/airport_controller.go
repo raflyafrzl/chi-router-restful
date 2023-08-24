@@ -64,7 +64,14 @@ func (a *airportcontroller) Insert(w http.ResponseWriter, r *http.Request) {
 	data, err := a.service.Create(request)
 	utils.ErrorResponseWeb(err, 404)
 
-	response, _ := json.Marshal(data)
+	var rawresponse model.ResponseWeb = model.ResponseWeb{
+		Status:     "Success",
+		Message:    "Data has been successfully created",
+		StatusCode: 201,
+		Data:       data,
+	}
+
+	response, _ := json.Marshal(rawresponse)
 
 	w.WriteHeader(201)
 	w.Write(response)

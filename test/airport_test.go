@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bytes"
 	"encoding/json"
 	"gochiapp/entities"
 	"gochiapp/model"
@@ -50,7 +51,7 @@ func TestGetAllAirport(t *testing.T) {
 		t.Fatal("Error occured")
 	}
 
-	assert.Equal(t, int16(200), result.StatusCode, "Invalid status code expected")
+	assert.Equal(t, 200, response.StatusCode, "Invalid status code expected")
 	assert.Equal(t, "Success", result.Status, "Invalid status expected")
 
 	//get response data
@@ -114,5 +115,51 @@ func TestGetAirportById(t *testing.T) {
 	assert.Equal(t, dataAirport.AirportName, bodyData.Result.AirportName, "Invalid airport name expected")
 	assert.Equal(t, dataAirport.Location, bodyData.Result.Location, "Invalid location expected")
 	assert.Equal(t, dataAirport.LocationAcronym, bodyData.Result.LocationAcronym, "Invalid location acronym expected")
+	airportRepo.DeleteAll(ctx)
+}
 
+func TestCreateAirport(t *testing.T) {
+
+	ctx, cancel := createTestContext()
+
+	defer cancel()
+	airportRepo.DeleteAll(ctx)
+	s.Router.Post("/api/v1/airport", airportController.Insert)
+
+	var payload model.CreateAirportModel = model.CreateAirportModel{
+		Location:        dataAirport.Location,
+		LocationAcronym: dataAirport.LocationAcronym,
+		AirportName:     dataAirport.AirportName,
+	}
+
+	var payloadByte []byte
+
+	payloadByte, _ = json.Marshal(payload)
+
+	var request *http.Request = httptest.NewRequest(http.MethodPost, "/api/v1/airport", bytes.NewBuffer(payloadByte))
+	var response *httptest.ResponseRecorder = httptest.NewRecorder()
+
+	s.Router.ServeHTTP(response, request)
+
+	var result *http.Response = response.Result()
+
+	body, _ := io.ReadAll(result.Body)
+	var responseData model.ResponseWeb
+	_ = json.Unmarshal(body, &responseData)
+
+	assert.Equal(t, 201, result.StatusCode, "Invalid status code expected")
+	assert.Equal(t, int16(201), responseData.StatusCode, "Invalid status code response expected")
+	assert.Equal(t, "Success", responseData.Status, "Invalid status resposne expected")
+	assert.NotNil(t, responseData.Message, "Invalid message expected")
+
+	//test the data
+	var resultData model.CreateAirportModel
+	var rawResultByte []byte
+	rawResultByte, _ = json.Marshal(responseData.Data)
+	_ = json.Unmarshal(rawResultByte, &resultData)
+
+	assert.Equal(t, payload.AirportName, resultData.AirportName, "Invalid airport name expected")
+	assert.Equal(t, payload.Location, resultData.Location, "Invalid location expected")
+	assert.Equal(t, payload.LocationAcronym, resultData.LocationAcronym, "Invalid location acronym expected")
+	airportRepo.DeleteAll(ctx)
 }

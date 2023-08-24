@@ -52,7 +52,7 @@ func (a *airportservice) Create(data model.CreateAirportModel) (model.CreateAirp
 
 	var airportCode string = string(data.AirportName[0]) + string(data.AirportName[len(data.AirportName)-1]) + "L"
 	airport = entities.Airport{
-		Id:              utils.GetRandomID(),
+		Id:              utils.GetRandomID(8),
 		AirportName:     data.AirportName,
 		Location:        data.Location,
 		AirportCode:     airportCode,

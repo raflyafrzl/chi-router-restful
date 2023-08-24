@@ -7,7 +7,7 @@ import (
 
 var alphanumeric string = "123abcefghijklPQRSTUVWXYmnopqrstu456789vwxyzABCDEFGHIJKLMNOZ"
 
-func GetRandomID() string {
+func GetRandomID(length int) string {
 	r := rand.New(rand.NewSource(time.Now().UnixMicro()))
 	var randomstring string = ""
 	var temp int
