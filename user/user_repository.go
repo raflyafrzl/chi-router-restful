@@ -55,3 +55,16 @@ func (u *userRepository) Delete(id string, ctx context.Context) {
 	}
 
 }
+
+func (u *userRepository) Update(data entities.User, ctx context.Context) error {
+
+	var error error
+	error = u.DB.WithContext(ctx).Where("id=?", data.Id).Updates(&data).Error
+
+	if error != nil {
+		return error
+	}
+
+	return nil
+
+}

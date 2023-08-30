@@ -82,3 +82,54 @@ func (u *userService) DeleteOne(id string) string {
 	return "User has been successfully deleted"
 
 }
+
+func (u *userService) Update(data model.UpdateUserModel, id string) string {
+
+	utils.Validate[model.UpdateUserModel](data)
+
+	var error error
+
+	error = validate.Var(id, "email")
+
+	if error == nil {
+		panic(model.ResponseFailWeb{
+			Status:     "Failed",
+			StatusCode: 400,
+			Error:      "Invalid id parameter",
+		})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+
+	_, error = u.repository.FindOne(id, ctx)
+
+	if error != nil {
+		panic(model.ResponseFailWeb{
+			Status:     "Failed",
+			Error:      error.Error(),
+			StatusCode: 404,
+		})
+	}
+
+	defer cancel()
+
+	var user entities.User = entities.User{
+		Id:          id,
+		Name:        data.Name,
+		Password:    data.Password,
+		PhoneNumber: data.PhoneNumber,
+	}
+
+	error = u.repository.Update(user, ctx)
+
+	if error != nil {
+		panic(model.ResponseFailWeb{
+			Status:     "Error",
+			Error:      error.Error(),
+			StatusCode: 500,
+		})
+	}
+
+	return "Data has been successfully updated"
+
+}

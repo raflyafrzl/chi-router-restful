@@ -25,6 +25,7 @@ func (u *userController) Route(r chi.Router) {
 
 	r.Post("/", u.Create)
 	r.Delete("/{id}", u.Delete)
+	r.Patch("/{id}", u.Update)
 
 }
 
@@ -58,6 +59,41 @@ func (u *userController) Delete(w http.ResponseWriter, r *http.Request) {
 		Message:    message,
 	}
 
+	var response []byte
+	response, _ = json.Marshal(rawResponse)
+
+	w.WriteHeader(200)
+	w.Write(response)
+
+}
+
+func (u *userController) Update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var id string = chi.URLParam(r, "id")
+
+	var request model.UpdateUserModel
+
+	rawBody, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		panic(model.ResponseFailWeb{
+			Status:     "Failed",
+			Error:      "Invalid payload request",
+			StatusCode: 400,
+		})
+	}
+
+	_ = json.Unmarshal(rawBody, &request)
+
+	var message string = u.service.Update(request, id)
+
+	var rawResponse model.ResponseWeb = model.ResponseWeb{
+		Status:     "Success",
+		StatusCode: 200,
+		Data:       "-",
+		Message:    message,
+	}
 	var response []byte
 	response, _ = json.Marshal(rawResponse)
 
