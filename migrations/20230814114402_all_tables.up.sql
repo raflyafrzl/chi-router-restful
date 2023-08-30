@@ -17,11 +17,11 @@ CREATE TABLE airlines(
 );
 
 CREATE TABLE users(
-    id uuid PRIMARY KEY,
+    id varchar(14) PRIMARY KEY,
     name varchar(45) NOT NULL,
     email varchar(45) NOT NULL,
     phone_number varchar(14) NOT NULL,
-    password varchar(40) NOT NULL,
+    password varchar(75) NOT NULL,
     is_verified boolean DEFAULT FALSE,
     role varchar(15) DEFAULT 'user',
     UNIQUE(email)
