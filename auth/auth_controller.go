@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"gochiapp/interfaces"
+	"gochiapp/middlewares"
 	"gochiapp/model"
 	"io"
 	"net/http"
@@ -25,7 +26,11 @@ func NewAuthController(s *interfaces.AuthService) interfaces.AuthController {
 func (a *authController) Route(r chi.Router) {
 
 	r.Post("/login", a.Login)
-	r.Post("/verify/{id}", a.Verify)
+
+	r.Group(func(r chi.Router) {
+		r.Use(middlewares.AuthMiddleware)
+		r.Post("/verify", a.Verify)
+	})
 
 }
 
@@ -46,13 +51,15 @@ func (a *authController) Login(w http.ResponseWriter, r *http.Request) {
 	//unmarshal data
 	json.Unmarshal(rawBody, &request)
 
-	a.service.Compare(request)
+	var token string = a.service.CompareAndSigned(request)
 
 	var rawResponse model.ResponseWeb = model.ResponseWeb{
 		Status:     "Success",
 		StatusCode: 200,
 		Message:    "Login success",
-		Data:       "token",
+		Data: map[string]string{
+			"token": token,
+		},
 	}
 
 	var response []byte
@@ -65,17 +72,15 @@ func (a *authController) Login(w http.ResponseWriter, r *http.Request) {
 
 func (a *authController) Verify(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
+	var id string = chi.URLParam(r, "id")
 	var rawResponse model.ResponseWeb = model.ResponseWeb{
 		Status:     "Success",
 		StatusCode: 200,
-		Message:    "Login success",
-		Data:       "token",
+		Message:    "OTP Berhasil dikirim",
+		Data:       id,
 	}
 
-	var id string = chi.URLParam(r, "id")
-
-	a.service.Set(id)
+	// a.service.Set(id)
 
 	var response []byte
 

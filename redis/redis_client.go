@@ -24,21 +24,22 @@ func NewRedisClient(config config.ConfigInf) *RedisClient {
 		redis: redisClient,
 	}
 }
-func (r *RedisClient) GetValue(key string) string {
+func (r *RedisClient) GetValue(key string) (string, error) {
 
 	var rdbCommand *redis.StringCmd = r.redis.Get(context.Background(), key)
 
 	if err := rdbCommand.Err(); err != nil {
-		panic(err)
+
+		return "", err
 	}
 
 	data, err := rdbCommand.Result()
 
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	return data
+	return data, nil
 
 }
 

@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"gochiapp/config"
 	"gochiapp/entities"
 	"gochiapp/interfaces"
 	"gochiapp/model"
@@ -11,24 +12,28 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type authService struct {
 	user interfaces.UserRepository
 	r    *redis.RedisClient
+	c    config.ConfigInf
 }
 
-func NewAuthService(user *interfaces.UserRepository, redis *redis.RedisClient) interfaces.AuthService {
+func NewAuthService(user *interfaces.UserRepository, redis *redis.RedisClient, c config.ConfigInf) interfaces.AuthService {
 	var service authService = authService{
 		user: *user,
 		r:    redis,
+		c:    c,
 	}
 
 	return &service
 
 }
 
-func (a *authService) Compare(data model.LoginUserModel) {
+func (a *authService) CompareAndSigned(data model.LoginUserModel) string {
 
 	utils.Validate[model.LoginUserModel](data)
 
@@ -48,16 +53,47 @@ func (a *authService) Compare(data model.LoginUserModel) {
 		utils.ErrorResponseWeb(errors.New("Invalid email or password"), 400)
 	}
 
+	var token *jwt.Token = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":    user.Id,
+		"email": user.Email,
+		"exp":   time.Hour * 1,
+	})
+
+	tokenString, err := token.SignedString([]byte(a.c.Get("JWT_KEY")))
+
+	utils.ErrorResponseWeb(err, 401)
+
+	return tokenString
+
 }
 
-func (a *authService) Set(data string) {
+func (a *authService) Set(key string) {
 
 	var randInt *rand.Rand = rand.New(rand.NewSource(time.Now().UnixMicro()))
 
 	var timeLeave = time.Second * 10
 
-	var value string = strconv.Itoa(randInt.Intn(1001) + 9999)
+	var value string = strconv.Itoa(randInt.Intn(9999) + 1000)
 
-	a.r.SetValue(data, value, timeLeave)
+	data, err := a.r.GetValue(key)
+
+	if err != nil {
+		utils.ErrorResponseWeb(errors.New("Invalid OTP"), 404)
+	}
+
+	if len(data) <= 0 {
+		a.r.SetValue(data, value, timeLeave)
+		return
+	}
+
+}
+func (a *authService) Get(key string) string {
+
+	data, err := a.r.GetValue(key)
+
+	if err != nil {
+		utils.ErrorResponseWeb(errors.New("Invalid OTP"), 404)
+	}
+	return data
 
 }

@@ -35,7 +35,7 @@ func main() {
 	var userController interfaces.UserController = user.NewUserController(&userService)
 
 	var redisClient *redis.RedisClient = redis.NewRedisClient(configuration)
-	var authService interfaces.AuthService = auth.NewAuthService(&userRepository, redisClient)
+	var authService interfaces.AuthService = auth.NewAuthService(&userRepository, redisClient, configuration)
 	var authController interfaces.AuthController = auth.NewAuthController(&authService)
 
 	//sub-router for airport
