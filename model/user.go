@@ -8,7 +8,12 @@ type CreateUserModel struct {
 }
 
 type UpdateUserModel struct {
-	Name        string `json:"name" validate:"min=4"`
-	PhoneNumber string `json:"phone_number" validate:"e164"`
-	Password    string `json:"password" validate:"min5"`
+	Name        string `json:"name" validate:"omitempty,min=4"`
+	PhoneNumber string `json:"phone_number" validate:"omitempty,e164"`
+	Password    string `json:"password" validate:"omitempty,min=5"`
+}
+
+type LoginUserModel struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
 }

@@ -57,24 +57,13 @@ func (u *userService) DeleteOne(id string) string {
 	var error error
 	error = validate.Var(id, "email")
 
-	if error == nil {
-		panic(model.ResponseFailWeb{
-			Status:     "Failed",
-			StatusCode: 400,
-			Error:      "Invalid Id Provided",
-		})
-	}
+	utils.ErrorResponseWeb(error, 400)
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 
 	_, error = u.repository.FindOne(id, ctx)
 
-	if error != nil {
-		panic(model.ResponseFailWeb{
-			Status:     "Failed",
-			StatusCode: 404,
-			Error:      error.Error(),
-		})
-	}
+	utils.ErrorResponseWeb(error, 404)
 
 	u.repository.Delete(id, ctx)
 	defer cancel()
@@ -103,12 +92,12 @@ func (u *userService) Update(data model.UpdateUserModel, id string) string {
 
 	_, error = u.repository.FindOne(id, ctx)
 
-	if error != nil {
-		panic(model.ResponseFailWeb{
-			Status:     "Failed",
-			Error:      error.Error(),
-			StatusCode: 404,
-		})
+	utils.ErrorResponseWeb(error, 400)
+
+	if data.Password != "" {
+		hashedPassword, err := utils.HashPassword(data.Password)
+		utils.ErrorResponseWeb(err, 500)
+		data.Password = string(hashedPassword)
 	}
 
 	defer cancel()
@@ -121,14 +110,7 @@ func (u *userService) Update(data model.UpdateUserModel, id string) string {
 	}
 
 	error = u.repository.Update(user, ctx)
-
-	if error != nil {
-		panic(model.ResponseFailWeb{
-			Status:     "Error",
-			Error:      error.Error(),
-			StatusCode: 500,
-		})
-	}
+	utils.ErrorResponseWeb(error, 500)
 
 	return "Data has been successfully updated"
 

@@ -12,7 +12,7 @@ type RedisClient struct {
 	redis *redis.Client
 }
 
-func NewRedisClient(config config.Config) *RedisClient {
+func NewRedisClient(config config.ConfigInf) *RedisClient {
 
 	var redisClient *redis.Client = redis.NewClient(&redis.Options{
 		Addr:     config.Get("REDIS_ADDR"),

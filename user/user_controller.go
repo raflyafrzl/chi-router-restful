@@ -91,7 +91,7 @@ func (u *userController) Update(w http.ResponseWriter, r *http.Request) {
 	var rawResponse model.ResponseWeb = model.ResponseWeb{
 		Status:     "Success",
 		StatusCode: 200,
-		Data:       "-",
+		Data:       id,
 		Message:    message,
 	}
 	var response []byte
