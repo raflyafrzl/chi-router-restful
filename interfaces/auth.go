@@ -14,6 +14,6 @@ type AuthController interface {
 
 type AuthService interface {
 	CompareAndSigned(data model.LoginUserModel) string
-	Set(key string)
+	Set(key string) string
 	Get(key string) string
 }

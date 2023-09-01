@@ -54,9 +54,9 @@ func (a *authService) CompareAndSigned(data model.LoginUserModel) string {
 	}
 
 	var token *jwt.Token = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    user.Id,
-		"email": user.Email,
-		"exp":   time.Hour * 1,
+		"Id":    user.Id,
+		"Email": user.Email,
+		"Exp":   time.Hour * 1,
 	})
 
 	tokenString, err := token.SignedString([]byte(a.c.Get("JWT_KEY")))
@@ -67,24 +67,21 @@ func (a *authService) CompareAndSigned(data model.LoginUserModel) string {
 
 }
 
-func (a *authService) Set(key string) {
+func (a *authService) Set(key string) string {
 
 	var randInt *rand.Rand = rand.New(rand.NewSource(time.Now().UnixMicro()))
 
-	var timeLeave = time.Second * 10
+	var timeLeave = time.Minute * 1
 
 	var value string = strconv.Itoa(randInt.Intn(9999) + 1000)
 
-	data, err := a.r.GetValue(key)
-
-	if err != nil {
-		utils.ErrorResponseWeb(errors.New("Invalid OTP"), 404)
-	}
+	data, _ := a.r.GetValue(key)
 
 	if len(data) <= 0 {
 		a.r.SetValue(data, value, timeLeave)
-		return
+		return value
 	}
+	return data
 
 }
 func (a *authService) Get(key string) string {

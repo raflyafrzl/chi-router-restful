@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"gochiapp/interfaces"
 	"gochiapp/middlewares"
@@ -72,15 +73,21 @@ func (a *authController) Login(w http.ResponseWriter, r *http.Request) {
 
 func (a *authController) Verify(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var id string = chi.URLParam(r, "id")
+
+	var ctx context.Context = r.Context()
+	var rawAuth []byte
+	var authData model.UserAuthModel
+	rawAuth, _ = json.Marshal(ctx.Value("auth"))
+
+	json.Unmarshal(rawAuth, &authData)
+
+	var otp string = a.service.Set(authData.Id)
 	var rawResponse model.ResponseWeb = model.ResponseWeb{
 		Status:     "Success",
 		StatusCode: 200,
 		Message:    "OTP Berhasil dikirim",
-		Data:       id,
+		Data:       otp,
 	}
-
-	// a.service.Set(id)
 
 	var response []byte
 
