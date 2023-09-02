@@ -30,6 +30,7 @@ func (a *authController) Route(r chi.Router) {
 
 	r.Group(func(r chi.Router) {
 		r.Use(middlewares.AuthMiddleware)
+		r.Get("/send", a.Send)
 		r.Post("/verify", a.Verify)
 	})
 
@@ -71,7 +72,7 @@ func (a *authController) Login(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (a *authController) Verify(w http.ResponseWriter, r *http.Request) {
+func (a *authController) Send(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var ctx context.Context = r.Context()
@@ -91,6 +92,55 @@ func (a *authController) Verify(w http.ResponseWriter, r *http.Request) {
 
 	var response []byte
 
+	response, _ = json.Marshal(rawResponse)
+
+	w.Write(response)
+
+}
+
+func (a *authController) Verify(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var request model.Otp
+	var ctx context.Context = r.Context()
+	var rawAuth []byte
+	var authData model.UserAuthModel
+	rawAuth, _ = json.Marshal(ctx.Value("auth"))
+
+	rawBody, err := io.ReadAll(r.Body)
+
+	//unmarshal
+	json.Unmarshal(rawAuth, &authData)
+	json.Unmarshal(rawBody, &request)
+
+	if err != nil {
+		panic(model.ResponseFailWeb{
+			Status:     "Failed",
+			StatusCode: 400,
+			Error:      err.Error(),
+		})
+	}
+
+	var otp string = a.service.Get(authData.Id)
+
+	if otp != request.OtpNumber {
+		panic(model.ResponseFailWeb{
+			Status:     "Failed",
+			StatusCode: 400,
+			Error:      "Invalid otp number",
+		})
+	}
+
+	var rawResponse model.ResponseWeb = model.ResponseWeb{
+		Status:     "Success",
+		StatusCode: 200,
+		Message:    "Data has been successfully verified",
+		Data:       "ID: " + authData.Id,
+	}
+
+	a.service.Verified(authData.Id)
+
+	var response []byte
 	response, _ = json.Marshal(rawResponse)
 
 	w.Write(response)

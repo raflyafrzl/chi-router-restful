@@ -19,9 +19,14 @@ type UserAuthModel struct {
 	Id    string        `json:"id"`
 	Email string        `json:"email"`
 	Exp   time.Duration `json:"exp"`
+	Name  string        `json:"name"`
 }
 
 type LoginUserModel struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
+}
+
+type Otp struct {
+	OtpNumber string `json:"otp" validate:"required"`
 }

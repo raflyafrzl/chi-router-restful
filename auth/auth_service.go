@@ -56,6 +56,7 @@ func (a *authService) CompareAndSigned(data model.LoginUserModel) string {
 	var token *jwt.Token = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"Id":    user.Id,
 		"Email": user.Email,
+		"Name":  user.Name,
 		"Exp":   time.Hour * 1,
 	})
 
@@ -92,5 +93,19 @@ func (a *authService) Get(key string) string {
 		utils.ErrorResponseWeb(errors.New("Invalid OTP"), 404)
 	}
 	return data
+}
+
+func (a *authService) Verified(id string) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+
+	defer cancel()
+
+	var data entities.User = entities.User{
+		Id:         id,
+		IsVerified: true,
+	}
+
+	a.user.Update(data, ctx)
 
 }

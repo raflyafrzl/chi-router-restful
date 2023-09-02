@@ -10,10 +10,12 @@ import (
 type AuthController interface {
 	Route(r chi.Router)
 	Login(w http.ResponseWriter, r *http.Request)
+	Send(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthService interface {
 	CompareAndSigned(data model.LoginUserModel) string
 	Set(key string) string
 	Get(key string) string
+	Verified(id string)
 }
