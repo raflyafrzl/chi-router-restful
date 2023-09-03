@@ -86,7 +86,7 @@ func (a *authController) Send(w http.ResponseWriter, r *http.Request) {
 	var rawResponse model.ResponseWeb = model.ResponseWeb{
 		Status:     "Success",
 		StatusCode: 200,
-		Message:    "OTP Berhasil dikirim",
+		Message:    "OTP berhasil dikirim",
 		Data:       "ID: " + authData.Id,
 	}
 
