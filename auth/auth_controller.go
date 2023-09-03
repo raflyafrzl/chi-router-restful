@@ -14,12 +14,14 @@ import (
 
 type authController struct {
 	service interfaces.AuthService
+	m       middlewares.Middleware
 }
 
-func NewAuthController(s *interfaces.AuthService) interfaces.AuthController {
+func NewAuthController(s *interfaces.AuthService, m *middlewares.Middleware) interfaces.AuthController {
 
 	return &authController{
 		service: *s,
+		m:       *m,
 	}
 
 }
@@ -29,7 +31,7 @@ func (a *authController) Route(r chi.Router) {
 	r.Post("/login", a.Login)
 
 	r.Group(func(r chi.Router) {
-		r.Use(middlewares.AuthMiddleware)
+		r.Use(a.m.AuthMiddleware)
 		r.Get("/send", a.Send)
 		r.Post("/verify", a.Verify)
 	})

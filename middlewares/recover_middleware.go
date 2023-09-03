@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func RecoveryMiddleware(han http.Handler) http.Handler {
+func (m *Middleware) RecoveryMiddleware(han http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			w.Header().Set("Content-Type", "application/json")

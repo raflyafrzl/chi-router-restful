@@ -17,7 +17,7 @@ type Server struct {
 func StarterServer() *Server {
 	s := &Server{}
 	s.Router = chi.NewRouter()
-	s.Router.Use(middlewares.RecoveryMiddleware)
+	s.Router.Use(md.RecoveryMiddleware)
 	return s
 }
 
@@ -33,3 +33,4 @@ var airportController = airport.NewAirport(&airportService)
 
 var configuration = config.New("../.env.test")
 var dbconfig = config.InitDB(configuration)
+var md middlewares.Middleware = *middlewares.NewMiddleware(dbconfig)

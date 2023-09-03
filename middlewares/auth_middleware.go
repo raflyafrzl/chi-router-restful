@@ -11,7 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthMiddleware(han http.Handler) http.Handler {
+func (a *Middleware) AuthMiddleware(han http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var tokenString string = r.Header.Get("authorization")

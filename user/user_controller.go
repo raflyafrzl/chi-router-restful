@@ -1,8 +1,10 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"gochiapp/interfaces"
+	"gochiapp/middlewares"
 	"gochiapp/model"
 	"gochiapp/utils"
 	"io"
@@ -13,11 +15,13 @@ import (
 
 type userController struct {
 	service interfaces.UserService
+	m       middlewares.Middleware
 }
 
-func NewUserController(service *interfaces.UserService) interfaces.UserController {
+func NewUserController(service *interfaces.UserService, m *middlewares.Middleware) interfaces.UserController {
 	return &userController{
 		service: *service,
+		m:       *m,
 	}
 }
 
@@ -25,7 +29,12 @@ func (u *userController) Route(r chi.Router) {
 
 	r.Post("/", u.Create)
 	r.Delete("/{id}", u.Delete)
-	r.Patch("/{id}", u.Update)
+
+	r.Group(func(r chi.Router) {
+		r.Use(u.m.AuthMiddleware)
+		r.Use(u.m.VerifiedMiddleware)
+		r.Patch("/", u.Update)
+	})
 
 }
 
@@ -70,9 +79,15 @@ func (u *userController) Delete(w http.ResponseWriter, r *http.Request) {
 func (u *userController) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var id string = chi.URLParam(r, "id")
-
 	var request model.UpdateUserModel
+	var authData model.UserAuthModel
+	var rawAuth []byte
+
+	var ctx context.Context = r.Context()
+
+	rawAuth, _ = json.Marshal(ctx.Value("auth"))
+
+	_ = json.Unmarshal(rawAuth, &authData)
 
 	rawBody, err := io.ReadAll(r.Body)
 
@@ -86,12 +101,12 @@ func (u *userController) Update(w http.ResponseWriter, r *http.Request) {
 
 	_ = json.Unmarshal(rawBody, &request)
 
-	var message string = u.service.Update(request, id)
+	var message string = u.service.Update(request, authData.Id)
 
 	var rawResponse model.ResponseWeb = model.ResponseWeb{
 		Status:     "Success",
 		StatusCode: 200,
-		Data:       id,
+		Data:       authData.Id,
 		Message:    message,
 	}
 	var response []byte

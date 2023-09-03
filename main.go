@@ -20,11 +20,14 @@ func main() {
 
 	//setup configuration
 	var configuration config.ConfigInf = config.New()
+	//setup db connection
+	var db *gorm.DB = config.InitDB(configuration)
+
+	//setup Middlewares
+	var middlewares middlewares.Middleware = *middlewares.NewMiddleware(db)
 	//settings middleware
 	r.Use(middlewares.RecoveryMiddleware)
 
-	//setup repo->service->controller
-	var db *gorm.DB = config.InitDB(configuration)
 	var airportrepository interfaces.AirportRepository = airport.NewAirportRepository(db)
 	var airportService interfaces.AirportService = airport.NewAirportService(&airportrepository)
 	var airport interfaces.AirportController = airport.NewAirport(&airportService)
@@ -32,11 +35,11 @@ func main() {
 	var userRepository interfaces.UserRepository = user.NewUserRepository(db)
 	var userService interfaces.UserService = user.NewUserService(&userRepository)
 
-	var userController interfaces.UserController = user.NewUserController(&userService)
+	var userController interfaces.UserController = user.NewUserController(&userService, &middlewares)
 
 	var redisClient *redis.RedisClient = redis.NewRedisClient(configuration)
 	var authService interfaces.AuthService = auth.NewAuthService(&userRepository, redisClient, configuration)
-	var authController interfaces.AuthController = auth.NewAuthController(&authService)
+	var authController interfaces.AuthController = auth.NewAuthController(&authService, &middlewares)
 
 	//sub-router for airport
 	r.Route("/api/v1/airport", airport.Route)
