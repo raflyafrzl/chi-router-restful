@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"bytes"
 	"context"
+	"embed"
 	"errors"
 	"gochiapp/config"
 	"gochiapp/entities"
@@ -9,12 +11,19 @@ import (
 	"gochiapp/model"
 	"gochiapp/redis"
 	"gochiapp/utils"
+	"html/template"
 	"math/rand"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"gopkg.in/gomail.v2"
 )
+
+//go:embed mail.htm
+var templates embed.FS
+
+var myTemplates = template.Must(template.ParseFS(templates, "mail.htm"))
 
 type authService struct {
 	user interfaces.UserRepository
@@ -68,21 +77,29 @@ func (a *authService) CompareAndSigned(data model.LoginUserModel) string {
 
 }
 
-func (a *authService) Set(key string) string {
+func (a *authService) Set(authData model.UserAuthModel) {
 
 	var randInt *rand.Rand = rand.New(rand.NewSource(time.Now().UnixMicro()))
 
-	var timeLeave = time.Minute * 1
+	var timeLeave = time.Minute * 5
 
 	var value string = strconv.Itoa(randInt.Intn(9999) + 1000)
 
-	data, _ := a.r.GetValue(key)
+	data, _ := a.r.GetValue(authData.Id)
 
 	if len(data) <= 0 {
-		a.r.SetValue(data, value, timeLeave)
-		return value
+		a.r.SetValue(authData.Id, value, timeLeave)
+
+		var dataBody map[string]any = map[string]any{
+			"Name":  authData.Name,
+			"Otp":   value,
+			"Brand": "TimeFlies",
+		}
+
+		//send to gmail using goroutine
+		go a.sendEmail(dataBody, authData.Email)
+
 	}
-	return data
 
 }
 func (a *authService) Get(key string) string {
@@ -108,4 +125,27 @@ func (a *authService) Verified(id string) {
 
 	a.user.Update(data, ctx)
 
+}
+
+func (a *authService) sendEmail(dataBody any, email string) {
+
+	var body bytes.Buffer
+
+	err := myTemplates.Execute(&body, dataBody)
+
+	if err != nil {
+		panic(err)
+	}
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", a.c.Get("FROM_EMAIL"))
+	m.SetHeader("To", email)
+	m.SetHeader("Subject", "TimeFlies Indonesia")
+	m.SetBody("text/html", body.String())
+
+	d := gomail.NewDialer("smtp.gmail.com", 587, a.c.Get("FROM_EMAIL"), a.c.Get("APP_PASSWORD"))
+
+	if err := d.DialAndSend(m); err != nil {
+		panic(err)
+	}
 }

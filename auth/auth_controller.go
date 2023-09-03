@@ -82,12 +82,12 @@ func (a *authController) Send(w http.ResponseWriter, r *http.Request) {
 
 	json.Unmarshal(rawAuth, &authData)
 
-	var otp string = a.service.Set(authData.Id)
+	a.service.Set(authData)
 	var rawResponse model.ResponseWeb = model.ResponseWeb{
 		Status:     "Success",
 		StatusCode: 200,
 		Message:    "OTP Berhasil dikirim",
-		Data:       otp,
+		Data:       "ID: " + authData.Id,
 	}
 
 	var response []byte
