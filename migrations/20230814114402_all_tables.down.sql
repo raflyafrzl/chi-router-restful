@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS airlines;
+DROP TABLE IF EXISTS airports; 
+DROP TABLE IF EXISTS notifications;

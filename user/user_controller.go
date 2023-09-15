@@ -13,19 +13,19 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type userController struct {
+type UserController struct {
 	service interfaces.UserService
 	m       middlewares.Middleware
 }
 
-func NewUserController(service *interfaces.UserService, m *middlewares.Middleware) interfaces.UserController {
-	return &userController{
+func NewUserController(service *interfaces.UserService, m *middlewares.Middleware) *UserController {
+	return &UserController{
 		service: *service,
 		m:       *m,
 	}
 }
 
-func (u *userController) Route(r chi.Router) {
+func (u *UserController) Route(r chi.Router) {
 
 	r.Post("/", u.Create)
 	r.Delete("/{id}", u.Delete)
@@ -38,7 +38,7 @@ func (u *userController) Route(r chi.Router) {
 
 }
 
-func (u *userController) Create(w http.ResponseWriter, r *http.Request) {
+func (u *UserController) Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	body, err := io.ReadAll(r.Body)
 	utils.ErrorResponseWeb(err, 500)
@@ -55,7 +55,7 @@ func (u *userController) Create(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (u *userController) Delete(w http.ResponseWriter, r *http.Request) {
+func (u *UserController) Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var id string = chi.URLParam(r, "id")
@@ -76,7 +76,7 @@ func (u *userController) Delete(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (u *userController) Update(w http.ResponseWriter, r *http.Request) {
+func (u *UserController) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var request model.UpdateUserModel

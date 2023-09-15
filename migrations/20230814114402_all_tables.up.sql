@@ -26,3 +26,11 @@ CREATE TABLE users(
     role varchar(15) DEFAULT 'user',
     UNIQUE(email)
 );
+
+CREATE TABLE notifications(
+    id varchar(10) PRIMARY KEY,
+    user_id varchar(14) NOT NULL,
+    message TEXT NOT NULL,
+    mark_as_read boolean DEFAULT FALSE,
+    CONSTRAINT fk_notif_user_id FOREIGN KEY(user_id) REFERENCES users(id)
+);

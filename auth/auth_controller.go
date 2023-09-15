@@ -12,21 +12,21 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type authController struct {
+type AuthController struct {
 	service interfaces.AuthService
 	m       middlewares.Middleware
 }
 
-func NewAuthController(s *interfaces.AuthService, m *middlewares.Middleware) interfaces.AuthController {
+func NewAuthController(s *interfaces.AuthService, m *middlewares.Middleware) *AuthController {
 
-	return &authController{
+	return &AuthController{
 		service: *s,
 		m:       *m,
 	}
 
 }
 
-func (a *authController) Route(r chi.Router) {
+func (a *AuthController) Route(r chi.Router) {
 
 	r.Post("/login", a.Login)
 
@@ -38,7 +38,7 @@ func (a *authController) Route(r chi.Router) {
 
 }
 
-func (a *authController) Login(w http.ResponseWriter, r *http.Request) {
+func (a *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var request model.LoginUserModel
@@ -74,7 +74,7 @@ func (a *authController) Login(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (a *authController) Send(w http.ResponseWriter, r *http.Request) {
+func (a *AuthController) Send(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var ctx context.Context = r.Context()
@@ -100,7 +100,7 @@ func (a *authController) Send(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (a *authController) Verify(w http.ResponseWriter, r *http.Request) {
+func (a *AuthController) Verify(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var request model.Otp

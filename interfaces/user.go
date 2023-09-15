@@ -4,16 +4,7 @@ import (
 	"context"
 	"gochiapp/entities"
 	"gochiapp/model"
-	"net/http"
-
-	"github.com/go-chi/chi/v5"
 )
-
-type UserController interface {
-	Create(w http.ResponseWriter, r *http.Request)
-	Route(r chi.Router)
-	Delete(w http.ResponseWriter, r *http.Request)
-}
 
 type UserService interface {
 	Create(model.CreateUserModel) entities.User

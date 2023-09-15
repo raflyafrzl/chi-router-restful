@@ -7,6 +7,7 @@ import (
 	"gochiapp/config"
 	"gochiapp/interfaces"
 	"gochiapp/middlewares"
+	"gochiapp/notification"
 	"gochiapp/redis"
 	"gochiapp/user"
 	"net/http"
@@ -28,23 +29,33 @@ func main() {
 	//settings middleware
 	r.Use(middlewares.RecoveryMiddleware)
 
+	//Airport
 	var airportrepository interfaces.AirportRepository = airport.NewAirportRepository(db)
 	var airportService interfaces.AirportService = airport.NewAirportService(&airportrepository)
-	var airport interfaces.AirportController = airport.NewAirport(&airportService)
+	var airport *airport.AirportController = airport.NewAirport(&airportService)
 
+	//User
 	var userRepository interfaces.UserRepository = user.NewUserRepository(db)
 	var userService interfaces.UserService = user.NewUserService(&userRepository)
-
-	var userController interfaces.UserController = user.NewUserController(&userService, &middlewares)
+	var userController *user.UserController = user.NewUserController(&userService, &middlewares)
 
 	var redisClient *redis.RedisClient = redis.NewRedisClient(configuration)
+
+	//Auth
 	var authService interfaces.AuthService = auth.NewAuthService(&userRepository, redisClient, configuration)
-	var authController interfaces.AuthController = auth.NewAuthController(&authService, &middlewares)
+	var authController *auth.AuthController = auth.NewAuthController(&authService, &middlewares)
+
+	//notification
+	var notifRepository interfaces.NotificationRepository = notification.NewNotifRepository(db)
+	var notifService interfaces.NotificationService = notification.NewNotifService(&notifRepository)
+	var notifController notification.NotificationController = *notification.NewNotificationController(&notifService)
 
 	//sub-router for airport
+	r.Route("/api/v1/notification", notifController.Route)
 	r.Route("/api/v1/airport", airport.Route)
 	r.Route("/api/v1/user", userController.Route)
 	r.Route("/api/v1/auth", authController.Route)
+
 	//if Router not found
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
